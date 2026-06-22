@@ -65,12 +65,5 @@
         "format": "vendor/bin/pint"
     },
     "minimum-stability": "stable",
-    "prefer-stable": true,
-    "repositories": [
-        {
-            "_comment": "TODO(lorenzo): remove this entry once padosoft/askmydocs-connector-base is live on Packagist. Until then CI resolves the base package directly from its GitHub VCS repo via the v1.1.1 tag.",
-            "type": "vcs",
-            "url": "https://github.com/padosoft/askmydocs-connector-base"
-        }
-    ]
+    "prefer-stable": true
 }
