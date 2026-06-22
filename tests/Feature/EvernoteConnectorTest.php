@@ -429,4 +429,52 @@ final class EvernoteConnectorTest extends TestCase
         $contents = (string) $disk->get($files[0]);
         $this->assertStringContainsString('[REDACTED]', $contents);
     }
+
+    public function test_sync_full_resolves_project_key_to_default_when_not_set(): void
+    {
+        $installation = $this->makeInstallation();
+        $this->seedActiveCredential($installation->id);
+
+        Http::fake([
+            'api.evernote.com/v1/notes/search' => Http::response([
+                'notes' => [['guid' => 'note-pk', 'title' => 'PK Test']],
+                'totalNotes' => 1,
+            ], 200),
+            'api.evernote.com/v1/notes/note-pk*' => Http::response([
+                'guid' => 'note-pk',
+                'title' => 'PK Test',
+                'content' => '<en-note><p>body</p></en-note>',
+            ], 200),
+        ]);
+
+        $this->connector()->syncFull($installation->id);
+
+        $this->assertCount(1, $this->spy->dispatches);
+        $this->assertSame('default', $this->spy->dispatches[0]['projectKey']);
+    }
+
+    public function test_sync_full_uses_installation_project_key_when_set(): void
+    {
+        $installation = $this->makeInstallation();
+        $installation->project_key = 'my-project';
+        $installation->save();
+        $this->seedActiveCredential($installation->id);
+
+        Http::fake([
+            'api.evernote.com/v1/notes/search' => Http::response([
+                'notes' => [['guid' => 'note-pk2', 'title' => 'PK Explicit']],
+                'totalNotes' => 1,
+            ], 200),
+            'api.evernote.com/v1/notes/note-pk2*' => Http::response([
+                'guid' => 'note-pk2',
+                'title' => 'PK Explicit',
+                'content' => '<en-note><p>body</p></en-note>',
+            ], 200),
+        ]);
+
+        $this->connector()->syncFull($installation->id);
+
+        $this->assertCount(1, $this->spy->dispatches);
+        $this->assertSame('my-project', $this->spy->dispatches[0]['projectKey']);
+    }
 }

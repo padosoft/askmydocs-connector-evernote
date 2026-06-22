@@ -5,6 +5,12 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and t
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-06-22
+
+### Changed
+
+- Adopt `BaseConnector::resolveProjectKey()` from `padosoft/askmydocs-connector-base` v1.3 for project binding. The full and incremental sync paths now resolve the target project key via the shared base helper — `ConnectorInstallation::$project_key` first, then the host's `kb.ingest.default_project`, then the literal `'default'`. This replaces the previous `connector-<key>` (`connector-evernote`) fallback and enables multi-account / project-scoped installations to ingest into the correct project. Requires `padosoft/askmydocs-connector-base` `^1.3`.
+
 ## [1.0.0] - 2026-05-12
 
 ### Added
