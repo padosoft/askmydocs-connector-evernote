@@ -61,6 +61,8 @@ This package is the smallest possible surface for shipping that integration:
 - 🏢 **Per-tenant isolated** — every credential read and ingestion dispatch is scoped to the active `TenantContext`.
 - 🧪 **Test-friendly** — pure-PHP unit tests for the ENML converter, `Http::fake()` feature tests for the connector + importer, opt-in live test that hits real `sandbox.evernote.com` when `CONNECTOR_EVERNOTE_LIVE=1`.
 
+- **Provenance declaration** — implements `DeclaresProvenance` (connector-base ^1.5), labelling ingested content `TrustedInternal`: an Evernote account the organisation controls, so whoever wrote a document had to be granted the ability to write it. A statement about *authorship*, not about correctness — see the IMAP connector for the contrasting case.
+
 ## 🚀 AI vibe-coding pack included
 
 This package was built with a vibe-coding pack of Claude Code skills and rules (`.claude/` directory in the parent AskMyDocs repo) that codify the architectural invariants — the IoC contract that keeps this package standalone-agnostic, the Evernote API quirks the connector navigates, the failure-loud exception taxonomy, the ENEX streaming contract.
