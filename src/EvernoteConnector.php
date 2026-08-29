@@ -12,9 +12,11 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Padosoft\AskMyDocsConnectorBase\BaseConnector;
+use Padosoft\AskMyDocsConnectorBase\Contracts\DeclaresProvenance;
 use Padosoft\AskMyDocsConnectorBase\Exceptions\ConnectorApiException;
 use Padosoft\AskMyDocsConnectorBase\Exceptions\ConnectorAuthException;
 use Padosoft\AskMyDocsConnectorBase\HealthStatus;
+use Padosoft\AskMyDocsConnectorBase\ProvenanceTier;
 use Padosoft\AskMyDocsConnectorBase\Models\ConnectorInstallation;
 use Padosoft\AskMyDocsConnectorBase\Support\Metadata\SourceAwareMetadataBuilder;
 use Padosoft\AskMyDocsConnectorBase\Support\Metadata\VendorMimeSelector;
@@ -62,7 +64,7 @@ use Padosoft\AskMyDocsConnectorEvernote\Support\EnmlToMarkdown;
  *   - CONNECTOR_EVERNOTE_API_BASE  (e.g. https://api.evernote.com — sandbox
  *                                   at sandbox.evernote.com for local dev)
  */
-class EvernoteConnector extends BaseConnector
+class EvernoteConnector extends BaseConnector implements DeclaresProvenance
 {
     public function key(): string
     {
@@ -367,6 +369,24 @@ class EvernoteConnector extends BaseConnector
 
         $this->vault->clearCredentials($installationId);
         $this->emitAudit('disconnected', installationId: $installationId);
+    }
+
+    /**
+     * Content here was written inside the organisation.
+     *
+     * This connector reads an Evernote account the organisation controls — a system whose write access the
+     * organisation grants. Whoever authored a document had to be given the
+     * ability to author it, which is exactly the property `TrustedInternal`
+     * records. Contrast the IMAP connector, whose mailbox accepts a message
+     * from anyone who knows the address.
+     *
+     * "Trusted" is a statement about authorship, not about correctness or
+     * curation. An internal page can be wrong, stale or unreviewed; that is
+     * the Auto-Wiki curation tier's question, and it is a different one.
+     */
+    public function provenanceTier(int $installationId): ProvenanceTier
+    {
+        return ProvenanceTier::TrustedInternal;
     }
 
     public function health(int $installationId): HealthStatus
